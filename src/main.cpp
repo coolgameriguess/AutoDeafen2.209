@@ -166,12 +166,13 @@ class $modify(MyPauseLayer, PauseLayer) {
         }
 
         auto sprite = CCSprite::createWithSpriteFrameName("GJ_musicOffBtn_001.png");
-        if (!sprite) {
+        auto selectedSprite = CCSprite::createWithSpriteFrameName("GJ_musicOffBtn_001.png");
+        if (!sprite || !selectedSprite) {
             log::error("AutoDeafen: pause button sprite GJ_musicOffBtn_001.png not found");
             return;
         }
 
-        auto btn = CCMenuItemSpriteExtra::create(sprite, sprite, this, menu_selector(MyPauseLayer::onAutoDeafenMenuClick));
+        auto btn = CCMenuItemSpriteExtra::create(sprite, selectedSprite, this, menu_selector(MyPauseLayer::onAutoDeafenMenuClick));
         if (!btn) {
             log::error("AutoDeafen: failed to create pause menu button");
             return;
