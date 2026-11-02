@@ -187,9 +187,12 @@ class $modify(MyPauseLayer, PauseLayer) {
 
         auto winSize = CCDirector::sharedDirector()->getWinSize();
 
+        // Top-right is taken by the vanilla "hide-pause-menu" eye-toggle button (its own
+        // top-level CCMenu, separate from center-button-menu), so use the top-left corner,
+        // which has no vanilla PauseLayer element on it, to avoid overlapping anything.
         auto ownMenu = CCMenu::create();
         ownMenu->setID("autodeafen-button-menu");
-        ownMenu->setPosition({winSize.width - 36.f, winSize.height - 36.f});
+        ownMenu->setPosition({36.f, winSize.height - 36.f});
         ownMenu->setZOrder(10);
         ownMenu->addChild(btn);
         this->addChild(ownMenu);
