@@ -159,11 +159,6 @@ class $modify(MyPauseLayer, PauseLayer) {
 	}
 	void customSetup() {
         PauseLayer::customSetup();
-        auto menu = this->getChildByID("right-button-menu");
-        if (!menu) {
-            log::error("AutoDeafen: right-button-menu not found in PauseLayer");
-            return;
-        }
 
         auto sprite = CCSprite::createWithSpriteFrameName("GJ_musicOffBtn_001.png");
         auto selectedSprite = CCSprite::createWithSpriteFrameName("GJ_musicOffBtn_001.png");
@@ -177,14 +172,26 @@ class $modify(MyPauseLayer, PauseLayer) {
             log::error("AutoDeafen: failed to create pause menu button");
             return;
         }
-        // auto btn = CCMenuItemExt::createSpriteExtra(
-        //     sprite,
-        //     [this](CCMenuItemSpriteExtra* btn) {
-        //
 
-        //     }
-        // );
-        menu->addChild(btn);
-        menu->updateLayout();
+        // geode.node-ids' "right-button-menu" isn't reliably available on every GD/Geode
+        // version (it wasn't present after the 2.2091 migration), so fall back to our own
+        // menu attached directly to the PauseLayer instead of depending on that ID existing.
+        auto menu = this->getChildByID("right-button-menu");
+        if (menu) {
+            menu->addChild(btn);
+            menu->updateLayout();
+            return;
+        }
+
+        log::warn("AutoDeafen: right-button-menu not found in PauseLayer, falling back to a standalone button");
+
+        auto winSize = CCDirector::sharedDirector()->getWinSize();
+
+        auto ownMenu = CCMenu::create();
+        ownMenu->setID("autodeafen-button-menu");
+        ownMenu->setPosition({winSize.width - 36.f, winSize.height - 36.f});
+        ownMenu->setZOrder(10);
+        ownMenu->addChild(btn);
+        this->addChild(ownMenu);
     }
 };
