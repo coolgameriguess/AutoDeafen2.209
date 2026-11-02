@@ -7,6 +7,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/ui/GeodeUI.hpp>
 #include <Geode/ui/Popup.hpp>
+#include <Geode/ui/Notification.hpp>
 
 #include "oauth.h"
 
@@ -73,8 +74,25 @@ protected:
     void done(CCObject* c) {
 
         log::info("next");
+
+        if (CLIENT_ID.empty() || CLIENT_SECRET.empty()) {
+            log::warn("AutoDeafen: Next pressed with an empty client id or secret, auth will likely fail");
+        }
+
         oauth::startServer();
-        ShellExecuteA(nullptr, "open", ("https://discord.com/oauth2/authorize?client_id=" + CLIENT_ID + "&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8000&scope=rpc.voice.write+rpc").c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+        auto result = ShellExecuteA(nullptr, "open", ("https://discord.com/oauth2/authorize?client_id=" + CLIENT_ID + "&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8000&scope=rpc.voice.write+rpc").c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+        auto code = reinterpret_cast<intptr_t>(result);
+        if (code <= 32) {
+            log::error("AutoDeafen: ShellExecuteA failed to open the Discord auth page (code {})", code);
+        } else {
+            log::info("AutoDeafen: opened Discord auth page in the default browser");
+        }
+
+        // the game is usually running in exclusive fullscreen, so the browser opens behind
+        // it with no visible window switch - let the user know to alt-tab instead of
+        // assuming nothing happened.
+        geode::Notification::create("Check your browser (it may have opened in the background) to finish Discord setup.", NotificationIcon::Info, 5.f)->show();
+
         AuthLayer::onClose(c);
 
 
